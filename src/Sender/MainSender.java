@@ -13,16 +13,17 @@ public class MainSender {
         SenderClient client = new SenderClient();
         client.startConnection("127.0.0.1", 4444);
 
-        try(BufferedReader br = new BufferedReader((new FileReader("")))){
+        try(BufferedReader br = new BufferedReader((new FileReader("simpleFile.txt")))){
             String line;
+            int trameNumber = 0;
             while ((line = br.readLine()) != null){
-                var t = new Trame(line);
-                t.SendAndWaitAck(client);
+                //this cast might cause an error
+                var t = new Trame(line, (char)trameNumber);
+                client.SendAndWaitAck(t);
             }
         }
 
         client.stopConnection();
         System.out.println("Done sending the file.");
-        System.out.println("Connection with server closed.");
     }
 }

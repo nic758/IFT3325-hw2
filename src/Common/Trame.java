@@ -8,42 +8,55 @@ import java.util.Arrays;
 
 public class Trame {
     //Slide page 13
+    //TODO:
     String Flag = "01111110";
-    String DestAddress;
     char Type;
     char Num;
-    String Control;
     String Payload;
-    //Error detection CRC
-    //Frame Check Sequence
-    String FCS;
+    String CRC;
 
-    public Trame(String data){
+    public Trame(String data, char num) {
+        Type = 'I';
+        Num = num;
         Payload = data;
     }
 
-    public Trame(byte[] r){
-        Type = (char)r[1];
-        Num = (char)r[2];
+    public Trame() {
+    }
 
-        var payloadBytes = Arrays.copyOfRange(r, 3, r.length-2);
+    public Trame(char type, char num) {
+        Type = type;
+        Num = num;
+    }
+
+    public void Receive(byte[] b) {
+        var stringData = new String(b, StandardCharsets.UTF_8);
+        //Flag = stringData.charAt(0);
+        Type = stringData.charAt(1);
+        Num = stringData.charAt(2);
+
+        var payloadBytes = Arrays.copyOfRange(b, 3, b.length - 3);
         Payload = new String(payloadBytes, StandardCharsets.UTF_8);
+        var trameLength = stringData.length();
+        CRC = stringData.substring(trameLength - 3, trameLength - 1);
     }
 
-    public void SendAndWaitAck(SenderClient sender) throws IOException {
-        boolean TrameReceived = false;
-        while (!TrameReceived){
-            System.out.println("Sending data: " + Payload);
-            var b = sender.sendBytes(Payload.getBytes(StandardCharsets.UTF_8));
-            var ack = new Trame(b);
-            //TODO: if Common.Trame is lost we should send back.
-            if(ack.Type == 'A' && ack.Num == Num){
-                TrameReceived = true;
-            }
-        }
+    public byte[] ToBytes() {
+        //TODO: calculate CRC
+        var trameString = String.valueOf('F') + String.valueOf(Type) + String.valueOf(Num) + Payload + String.valueOf("CRF");
+        return trameString.getBytes(StandardCharsets.UTF_8);
+    }
+    //TODO: do a print function
+
+    public char getType() {
+        return Type;
     }
 
-    public void Send(){
+    public char getNum() {
+        return Num;
+    }
 
+    public String getPayload() {
+        return Payload;
     }
 }

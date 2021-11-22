@@ -1,10 +1,10 @@
 package Receiver;
 
-import java.awt.*;
+import Common.Trame;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
 public class ReceiverServer {
     private ServerSocket serverSocket;
@@ -15,30 +15,36 @@ public class ReceiverServer {
     public void start(int port) throws IOException {
         serverSocket = new ServerSocket(port);
         //listening to the port 'port'
+        System.out.println("Waiting for connections...");
         clientSocket = serverSocket.accept();
         //allow data exchange
         BufferedInputStream buffer = new BufferedInputStream(clientSocket.getInputStream());
         in = new DataInputStream(buffer);
         out = new DataOutputStream(clientSocket.getOutputStream());
 
-
-        System.out.println("Waiting for connections...");
-        Socket socket = serverSocket.accept();
         System.out.println("Connected with peer");
 
         boolean close = false;
-        int dataLength = in.readInt();
-        if (dataLength <= 0) {
-            System.out.println("No data");
-            close = true;
-        }
-
-
         while (!close) {
+            int dataLength = in.readInt();
+            if (dataLength <= 0) {
+                System.out.println("No data");
+                close=true;
+                break;
+            }
+
             byte[] data = new byte[dataLength];
             in.readFully(data, 0, data.length);
-            System.out.println(data.toString());
-            var r = "Done".getBytes(StandardCharsets.UTF_8);
+            var incomingTrame = new Trame();
+            incomingTrame.Receive(data);
+
+            var resp = ProcessIncomingTrame(incomingTrame);
+            if(resp == null){
+                System.out.println("Stopping connection");
+                break;
+            }
+            var r = resp.ToBytes();
+
             out.writeInt(r.length);
             out.write(r);
         }
@@ -46,7 +52,21 @@ public class ReceiverServer {
         stop();
     }
 
-    public void stop() throws IOException {
+    private Trame ProcessIncomingTrame(Trame incoming){
+        if(incoming.getType() == 'I'){
+            System.out.println("Received trame " + (int)incoming.getNum()+ ", Data : "+ incoming.getPayload());
+            return new Trame('A', incoming.getNum());
+        }
+
+        if(incoming.getType() == 'F'){
+            System.out.println("Ending trame received.");
+            return null;
+        }
+
+        return null;
+    }
+
+    private void stop() throws IOException {
         in.close();
         out.close();
         clientSocket.close();

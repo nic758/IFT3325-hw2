@@ -1,7 +1,10 @@
 package Sender;
 
+import Common.Trame;
+
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class SenderClient {
     private Socket clientSocket;
@@ -26,8 +29,30 @@ public class SenderClient {
     }
 
     public void stopConnection() throws IOException {
+        var t = new Trame('F', '\0');
+        var b = t.ToBytes();
+        out.writeInt(b.length);
+        out.write(b);
+
         in.close();
         out.close();
         clientSocket.close();
+        System.out.println("Connection with server closed.");
+    }
+
+
+    public void SendAndWaitAck(Trame trame) throws IOException {
+        boolean TrameReceived = false;
+        while (!TrameReceived){
+            System.out.println("Sending trame "+ (int)trame.getNum() +", Data : " + trame.getPayload());
+            var b = sendBytes(trame.ToBytes());
+            var ack = new Trame();
+            ack.Receive(b);
+
+            //TODO: if Common.Trame is lost we should send back.
+            if(ack.getType() == 'A' && ack.getNum() == trame.getNum()){
+                TrameReceived = true;
+            }
+        }
     }
 }
