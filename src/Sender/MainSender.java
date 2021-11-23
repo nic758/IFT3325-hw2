@@ -13,11 +13,13 @@ public class MainSender {
         SenderClient client = new SenderClient();
         client.startConnection("127.0.0.1", 4444);
 
+        var con = new Trame('C', (char)0);
+        client.SendAndWaitAck(con);
+
         try(BufferedReader br = new BufferedReader((new FileReader("simpleFile.txt")))){
             String line;
             int trameNumber = 0;
             while ((line = br.readLine()) != null){
-                //this cast might cause an error
                 var t = new Trame(line, (char)trameNumber);
                 client.SendAndWaitAck(t);
             }

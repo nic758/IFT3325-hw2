@@ -46,8 +46,14 @@ public class Trame {
         var trameString = String.valueOf('F') + String.valueOf(Type) + String.valueOf(Num) + Payload + String.valueOf("CRF");
         return trameString.getBytes(StandardCharsets.UTF_8);
     }
-    //TODO: do a print function
 
+    public void PrintToConsole(){
+        System.out.println("******************************************");
+        System.out.println("Type: " + String.valueOf(Type));
+        System.out.println("Num: " + (int)Num);
+        System.out.println("Data: " + Payload);
+        System.out.println("******************************************");
+    }
     public char getType() {
         return Type;
     }

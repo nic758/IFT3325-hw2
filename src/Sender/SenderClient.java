@@ -43,16 +43,24 @@ public class SenderClient {
 
     public void SendAndWaitAck(Trame trame) throws IOException {
         boolean TrameReceived = false;
+        var sending="Sending: ";
+
         while (!TrameReceived){
-            System.out.println("Sending trame "+ (int)trame.getNum() +", Data : " + trame.getPayload());
+            System.out.println(sending);
+            trame.PrintToConsole();
             var b = sendBytes(trame.ToBytes());
+
             var ack = new Trame();
             ack.Receive(b);
+            System.out.println("Receiving: ");
+            ack.PrintToConsole();
 
-            //TODO: if Common.Trame is lost we should send back.
+            //TODO: if Trame is lost we should send back.
             if(ack.getType() == 'A' && ack.getNum() == trame.getNum()){
                 TrameReceived = true;
             }
+
+            sending = "Resending: ";
         }
     }
 }

@@ -43,8 +43,10 @@ public class ReceiverServer {
                 System.out.println("Stopping connection");
                 break;
             }
-            var r = resp.ToBytes();
 
+            System.out.println("Sending :");
+            resp.PrintToConsole();
+            var r = resp.ToBytes();
             out.writeInt(r.length);
             out.write(r);
         }
@@ -53,13 +55,19 @@ public class ReceiverServer {
     }
 
     private Trame ProcessIncomingTrame(Trame incoming){
+        System.out.println("Receiving: ");
+        incoming.PrintToConsole();
+
         if(incoming.getType() == 'I'){
-            System.out.println("Received trame " + (int)incoming.getNum()+ ", Data : "+ incoming.getPayload());
+            return new Trame('A', incoming.getNum());
+        }
+
+        if(incoming.getType() == 'C'){
+
             return new Trame('A', incoming.getNum());
         }
 
         if(incoming.getType() == 'F'){
-            System.out.println("Ending trame received.");
             return null;
         }
 
