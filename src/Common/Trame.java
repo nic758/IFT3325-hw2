@@ -52,6 +52,7 @@ public class Trame {
         System.out.println("Type: " + String.valueOf(Type));
         System.out.println("Num: " + (int)Num);
         System.out.println("Data: " + Payload);
+        System.out.println("CRC: " + CRC);
         System.out.println("******************************************");
     }
     public char getType() {
