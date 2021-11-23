@@ -26,6 +26,7 @@ public class MainSender {
             while ((line = br.readLine()) != null){
                 var t = new Trame(line, (char)trameNumber);
                 client.SendAndWaitAck(t);
+                trameNumber++;
             }
         }
 
