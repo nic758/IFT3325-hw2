@@ -9,14 +9,18 @@ import java.io.IOException;
 public class MainSender {
 
     public static void main(String[] args) throws IOException {
-	// write your code here
-        SenderClient client = new SenderClient();
-        client.startConnection("127.0.0.1", 4444);
+        var machine = args[0];
+        var port = Integer.parseInt(args[1]);
+        var file = args[2];
+        var goBackN = Integer.parseInt(args[3]);
 
-        var con = new Trame('C', (char)0);
+        SenderClient client = new SenderClient();
+        client.startConnection(machine, port);
+
+        var con = new Trame('C', (char)goBackN);
         client.SendAndWaitAck(con);
 
-        try(BufferedReader br = new BufferedReader((new FileReader("simpleFile.txt")))){
+        try(BufferedReader br = new BufferedReader((new FileReader(file)))){
             String line;
             int trameNumber = 0;
             while ((line = br.readLine()) != null){
