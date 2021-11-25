@@ -58,8 +58,9 @@ public class SenderClient {
 
         while (!TrameReceived){
             System.out.println(sending);
+            var byteTrame = trame.ToBytes();
             trame.PrintToConsole();
-            var b = sendBytes(trame.ToBytes());
+            var b = sendBytes(byteTrame);
 
             //If we have a timeout Exception.
             if(b.length == 0){
@@ -70,7 +71,6 @@ public class SenderClient {
             System.out.println("Receiving: ");
             ack.PrintToConsole();
 
-            //TODO: if Trame is lost we should send back.
             if(ack.getType() == 'A' && ack.getNum() == trame.getNum()){
                 TrameReceived = true;
             }

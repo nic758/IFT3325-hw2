@@ -2,18 +2,21 @@ package Common;
 
 import Sender.SenderClient;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.zip.CRC32;
 
 public class Trame {
     //Slide page 13
-    //TODO:
+    //TODO: flag AND bit stuffing.
     String Flag = "01111110";
     char Type;
     char Num;
     String Payload;
-    String CRC;
+    int CRC;
 
     public Trame(String data, char num) {
         Type = 'I';
@@ -35,16 +38,36 @@ public class Trame {
         Type = stringData.charAt(1);
         Num = stringData.charAt(2);
 
-        var payloadBytes = Arrays.copyOfRange(b, 3, b.length - 3);
+        var payloadBytes = Arrays.copyOfRange(b, 3, b.length - 2);
         Payload = new String(payloadBytes, StandardCharsets.UTF_8);
-        var trameLength = stringData.length();
-        CRC = stringData.substring(trameLength - 3, trameLength - 1);
+
+        var CRCbytes = Arrays.copyOfRange(b, b.length-2, b.length);
+        CRC = ((CRCbytes[1] & 0xff) << 8) | (CRCbytes[0] & 0xff);
     }
 
-    public byte[] ToBytes() {
-        //TODO: calculate CRC
-        var trameString = String.valueOf('F') + String.valueOf(Type) + String.valueOf(Num) + Payload + String.valueOf("CRF");
-        return trameString.getBytes(StandardCharsets.UTF_8);
+    public boolean IsCRCEquals(){
+        var trameString = String.valueOf('F') + String.valueOf(Type) + String.valueOf(Num) + Payload;
+        var trameBytes = trameString.getBytes(StandardCharsets.UTF_8);
+        var calculatedCRC = new CRC16CCITT().calcCRC(trameBytes);
+
+       return CRC == calculatedCRC;
+    }
+
+    public byte[] ToBytes() throws IOException {
+        var trameString = String.valueOf('F') + String.valueOf(Type) + String.valueOf(Num) + Payload;
+        var b = trameString.getBytes(StandardCharsets.UTF_8);
+        CRC = new CRC16CCITT().calcCRC(b);
+
+        var stream = new ByteArrayOutputStream();
+        stream.write(b);
+        //TODO: (char)CRC is 0
+        byte[] CRCbytes = new byte[2];
+        CRCbytes[0] = (byte) (CRC & 0xFF);
+        CRCbytes[1] = (byte) ((CRC >> 8) & 0xFF);
+
+        stream.write(CRCbytes);
+
+        return stream.toByteArray();
     }
 
     public void PrintToConsole(){

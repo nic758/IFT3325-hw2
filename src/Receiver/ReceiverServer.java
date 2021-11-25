@@ -58,6 +58,10 @@ public class ReceiverServer {
         System.out.println("Receiving: ");
         incoming.PrintToConsole();
 
+        if(!incoming.IsCRCEquals()){
+            return new Trame('R', incoming.getNum());
+        }
+
         if(incoming.getType() == 'I'){
             return new Trame('A', incoming.getNum());
         }
