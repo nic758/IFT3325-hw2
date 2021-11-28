@@ -12,7 +12,7 @@ import java.util.zip.CRC32;
 public class Trame {
     //Slide page 13
     //TODO: flag AND bit stuffing.
-    String Flag = "01111110";
+    String Flag = "~";
     char Type;
     char Num;
     String Payload;
@@ -34,19 +34,18 @@ public class Trame {
 
     public void Receive(byte[] b) {
         var stringData = new String(b, StandardCharsets.UTF_8);
-        //Flag = stringData.charAt(0);
         Type = stringData.charAt(1);
         Num = stringData.charAt(2);
 
-        var payloadBytes = Arrays.copyOfRange(b, 3, b.length - 2);
+        var payloadBytes = Arrays.copyOfRange(b, 3, b.length - 3);
         Payload = new String(payloadBytes, StandardCharsets.UTF_8);
 
-        var CRCbytes = Arrays.copyOfRange(b, b.length-2, b.length);
+        var CRCbytes = Arrays.copyOfRange(b, b.length-3, b.length-1);
         CRC = ((CRCbytes[1] & 0xff) << 8) | (CRCbytes[0] & 0xff);
     }
 
     public boolean IsCRCEquals(){
-        var trameString = String.valueOf('F') + String.valueOf(Type) + String.valueOf(Num) + Payload;
+        var trameString = String.valueOf(Type) + String.valueOf(Num) + Payload;
         var trameBytes = trameString.getBytes(StandardCharsets.UTF_8);
         var calculatedCRC = new CRC16CCITT().calcCRC(trameBytes);
 
@@ -54,9 +53,12 @@ public class Trame {
     }
 
     public byte[] ToBytes() throws IOException {
-        var trameString = String.valueOf('F') + String.valueOf(Type) + String.valueOf(Num) + Payload;
+        var trameString = Flag + String.valueOf(Type) + String.valueOf(Num) + Payload;
         var b = trameString.getBytes(StandardCharsets.UTF_8);
-        CRC = new CRC16CCITT().calcCRC(b);
+
+        var crcString = String.valueOf(Type) + String.valueOf(Num) + Payload;
+        var crcBytes = crcString.getBytes(StandardCharsets.UTF_8);
+        CRC = new CRC16CCITT().calcCRC(crcBytes);
 
         var stream = new ByteArrayOutputStream();
         stream.write(b);
@@ -65,6 +67,8 @@ public class Trame {
         CRCbytes[1] = (byte) ((CRC >> 8) & 0xFF);
 
         stream.write(CRCbytes);
+        //This add the flag at the end of the trame
+        stream.write(Flag.getBytes(StandardCharsets.UTF_8));
 
         return stream.toByteArray();
     }
