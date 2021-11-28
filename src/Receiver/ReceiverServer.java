@@ -1,7 +1,6 @@
 package Receiver;
 
 import Common.Trame;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -26,20 +25,12 @@ public class ReceiverServer {
 
         boolean close = false;
         while (!close) {
-            int dataLength = in.readInt();
-            if (dataLength <= 0) {
-                System.out.println("No data");
-                close=true;
-                break;
-            }
-
-            byte[] data = new byte[dataLength];
-            in.readFully(data, 0, data.length);
+            var data = Trame.GetTrameBytes(in);
             var incomingTrame = new Trame();
             incomingTrame.Receive(data);
 
             var resp = ProcessIncomingTrame(incomingTrame);
-            if(resp == null){
+            if (resp == null) {
                 System.out.println("Stopping connection");
                 break;
             }
@@ -47,31 +38,31 @@ public class ReceiverServer {
             System.out.println("Sending :");
             resp.PrintToConsole();
             var r = resp.ToBytes();
-            out.writeInt(r.length);
             out.write(r);
         }
 
         stop();
     }
 
-    private Trame ProcessIncomingTrame(Trame incoming){
+
+    private Trame ProcessIncomingTrame(Trame incoming) {
         System.out.println("Receiving: ");
         incoming.PrintToConsole();
 
-        if(!incoming.IsCRCEquals()){
+        if (!incoming.IsCRCEquals()) {
             return new Trame('R', incoming.getNum());
         }
 
-        if(incoming.getType() == 'I'){
+        if (incoming.getType() == 'I') {
             return new Trame('A', incoming.getNum());
         }
 
-        if(incoming.getType() == 'C'){
+        if (incoming.getType() == 'C') {
 
             return new Trame('A', incoming.getNum());
         }
 
-        if(incoming.getType() == 'F'){
+        if (incoming.getType() == 'F') {
             return null;
         }
 

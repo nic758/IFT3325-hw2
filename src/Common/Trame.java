@@ -3,6 +3,7 @@ package Common;
 import Sender.SenderClient;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -12,7 +13,7 @@ import java.util.zip.CRC32;
 public class Trame {
     //Slide page 13
     //TODO: flag AND bit stuffing.
-    String Flag = "~";
+    public static String Flag = "~";
     char Type;
     char Num;
     String Payload;
@@ -30,6 +31,24 @@ public class Trame {
     public Trame(char type, char num) {
         Type = type;
         Num = num;
+    }
+
+    public static byte[] GetTrameBytes(DataInputStream in) throws IOException {
+        var stream = new ByteArrayOutputStream();
+        var firstFlag = true;
+        Byte b;
+        while (true){
+            b = in.readByte();
+            stream.write(b);
+            if(b == Trame.Flag.charAt(0) && firstFlag){
+                firstFlag = false;
+                continue;
+            }
+            //Done reading the trame.
+            if(b==Trame.Flag.charAt(0) && !firstFlag){
+                return stream.toByteArray();
+            }
+        }
     }
 
     public void Receive(byte[] b) {
