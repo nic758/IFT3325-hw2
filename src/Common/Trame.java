@@ -60,7 +60,6 @@ public class Trame {
 
         var stream = new ByteArrayOutputStream();
         stream.write(b);
-        //TODO: (char)CRC is 0
         byte[] CRCbytes = new byte[2];
         CRCbytes[0] = (byte) (CRC & 0xFF);
         CRCbytes[1] = (byte) ((CRC >> 8) & 0xFF);
