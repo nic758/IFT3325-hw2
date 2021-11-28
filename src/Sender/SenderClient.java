@@ -13,7 +13,7 @@ public class SenderClient {
 
     public void startConnection(String ip, int port) throws IOException {
         clientSocket = new Socket(ip, port);
-        // clientSocket.setSoTimeout(3 * 1000);
+        clientSocket.setSoTimeout(3 * 1000);
         out = new DataOutputStream(clientSocket.getOutputStream());
         in = new DataInputStream(clientSocket.getInputStream());
     }
