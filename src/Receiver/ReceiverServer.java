@@ -33,6 +33,7 @@ public class ReceiverServer {
                 break;
             }
 
+            //Send response
             System.out.println("Sending :");
             resp.PrintToConsole();
             var r = resp.ToBytes();
