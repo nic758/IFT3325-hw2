@@ -18,16 +18,15 @@ public class SenderClient {
         in = new DataInputStream(clientSocket.getInputStream());
     }
 
-    public byte[] sendBytes(byte[] b) throws IOException {
+    public void SendBytes(byte[] b) throws IOException {
         try {
             out.write(b);
-            return Trame.GetTrameBytes(in);
         } catch (SocketTimeoutException e) {
             System.out.println(e);
             System.out.println("ERROR: Timeout exception");
         }
 
-        return new byte[0];
+      //  return new byte[0];
     }
 
     public void stopConnection() throws IOException {
@@ -50,14 +49,9 @@ public class SenderClient {
             System.out.println(sending);
             var byteTrame = trame.ToBytes();
             trame.PrintToConsole();
-            var b = sendBytes(byteTrame);
+            SendBytes(byteTrame);
 
-            //If we have a timeout Exception.
-            if (b.length == 0) {
-                continue;
-            }
-            var ack = new Trame();
-            ack.Receive(b);
+            var ack = Trame.GetTrame(in);
             System.out.println("Receiving: ");
             ack.PrintToConsole();
 

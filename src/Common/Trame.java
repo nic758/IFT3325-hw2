@@ -33,7 +33,7 @@ public class Trame {
         Num = num;
     }
 
-    public static byte[] GetTrameBytes(DataInputStream in) throws IOException {
+    public static Trame GetTrame(DataInputStream in) throws IOException {
         var stream = new ByteArrayOutputStream();
         var firstFlag = true;
         Byte b;
@@ -46,12 +46,15 @@ public class Trame {
             }
             //Done reading the trame.
             if(b==Trame.Flag.charAt(0) && !firstFlag){
-                return stream.toByteArray();
+
+                var t = new Trame();
+                t.Receive(stream.toByteArray());
+                return t;
             }
         }
     }
 
-    public void Receive(byte[] b) {
+    private void Receive(byte[] b) {
         var stringData = new String(b, StandardCharsets.UTF_8);
         Type = stringData.charAt(1);
         Num = stringData.charAt(2);

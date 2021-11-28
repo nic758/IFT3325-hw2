@@ -25,9 +25,7 @@ public class ReceiverServer {
 
         boolean close = false;
         while (!close) {
-            var data = Trame.GetTrameBytes(in);
-            var incomingTrame = new Trame();
-            incomingTrame.Receive(data);
+            var incomingTrame = Trame.GetTrame(in);
 
             var resp = ProcessIncomingTrame(incomingTrame);
             if (resp == null) {
