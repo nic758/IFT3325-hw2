@@ -45,6 +45,8 @@ public class SenderTest {
 
     @Test
     public void Test_CRC_shouldNotMatch() throws IOException {
+        //                             |Changed this byte. Original value 116
+        //                             |
         var b = new byte[]{126, 73, 0, 115, 101, 115, 116, -28, -73, 126};
         var stream = new DataInputStream(new ByteArrayInputStream(b));
         var t = Trame.GetTrame(stream);
