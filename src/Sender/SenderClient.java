@@ -25,8 +25,6 @@ public class SenderClient {
             System.out.println(e);
             System.out.println("ERROR: Timeout exception");
         }
-
-      //  return new byte[0];
     }
 
     public void stopConnection() throws IOException {

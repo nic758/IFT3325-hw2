@@ -12,7 +12,7 @@ import java.util.zip.CRC32;
 
 public class Trame {
     //Slide page 13
-    //TODO: flag AND bit stuffing.
+    //TODO:bit stuffing, test, sliding_window > 1 ??.
     public static String Flag = "~";
     char Type;
     char Num;
@@ -23,29 +23,33 @@ public class Trame {
         Type = 'I';
         Num = num;
         Payload = data;
-    }
 
-    public Trame() {
+        CalcCRC();
     }
 
     public Trame(char type, char num) {
         Type = type;
         Num = num;
+
+        CalcCRC();
+    }
+
+    public Trame() {
     }
 
     public static Trame GetTrame(DataInputStream in) throws IOException {
         var stream = new ByteArrayOutputStream();
         var firstFlag = true;
         Byte b;
-        while (true){
+        while (true) {
             b = in.readByte();
             stream.write(b);
-            if(b == Trame.Flag.charAt(0) && firstFlag){
+            if (b == Trame.Flag.charAt(0) && firstFlag) {
                 firstFlag = false;
                 continue;
             }
             //Done reading the trame.
-            if(b==Trame.Flag.charAt(0) && !firstFlag){
+            if (b == Trame.Flag.charAt(0) && !firstFlag) {
 
                 var t = new Trame();
                 t.Receive(stream.toByteArray());
@@ -62,25 +66,27 @@ public class Trame {
         var payloadBytes = Arrays.copyOfRange(b, 3, b.length - 3);
         Payload = new String(payloadBytes, StandardCharsets.UTF_8);
 
-        var CRCbytes = Arrays.copyOfRange(b, b.length-3, b.length-1);
+        var CRCbytes = Arrays.copyOfRange(b, b.length - 3, b.length - 1);
         CRC = ((CRCbytes[1] & 0xff) << 8) | (CRCbytes[0] & 0xff);
     }
 
-    public boolean IsCRCEquals(){
+    public boolean IsCRCEquals() {
         var trameString = String.valueOf(Type) + String.valueOf(Num) + Payload;
         var trameBytes = trameString.getBytes(StandardCharsets.UTF_8);
         var calculatedCRC = new CRC16CCITT().calcCRC(trameBytes);
 
-       return CRC == calculatedCRC;
+        return CRC == calculatedCRC;
+    }
+
+    public void CalcCRC() {
+        var crcString = String.valueOf(Type) + String.valueOf(Num) + Payload;
+        var crcBytes = crcString.getBytes(StandardCharsets.UTF_8);
+        CRC = new CRC16CCITT().calcCRC(crcBytes);
     }
 
     public byte[] ToBytes() throws IOException {
         var trameString = Flag + String.valueOf(Type) + String.valueOf(Num) + Payload;
         var b = trameString.getBytes(StandardCharsets.UTF_8);
-
-        var crcString = String.valueOf(Type) + String.valueOf(Num) + Payload;
-        var crcBytes = crcString.getBytes(StandardCharsets.UTF_8);
-        CRC = new CRC16CCITT().calcCRC(crcBytes);
 
         var stream = new ByteArrayOutputStream();
         stream.write(b);
@@ -95,14 +101,15 @@ public class Trame {
         return stream.toByteArray();
     }
 
-    public void PrintToConsole(){
+    public void PrintToConsole() {
         System.out.println("******************************************");
         System.out.println("Type: " + String.valueOf(Type));
-        System.out.println("Num: " + (int)Num);
+        System.out.println("Num: " + (int) Num);
         System.out.println("Data: " + Payload);
         System.out.println("CRC: " + CRC);
         System.out.println("******************************************");
     }
+
     public char getType() {
         return Type;
     }
@@ -113,5 +120,9 @@ public class Trame {
 
     public String getPayload() {
         return Payload;
+    }
+
+    public int getCRC() {
+        return CRC;
     }
 }
