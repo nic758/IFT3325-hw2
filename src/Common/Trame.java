@@ -40,13 +40,13 @@ public class Trame {
         boolean processNextChar = true;
         while (true) {
             b = in.readByte();
-
+            //if the previous char was a special char we don't want to process this char.
             if(!processNextChar){
                 processNextChar =true;
                 stream.write(b);
                 continue;
             }
-
+            //We will not want to process next char since it's our data.
             if(b == 'E'){
                 processNextChar = false;
                 continue;
