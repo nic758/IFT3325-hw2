@@ -49,13 +49,18 @@ public class SenderClient {
             trame.PrintToConsole();
             SendBytes(byteTrame);
 
-            var ack = Trame.GetTrame(in);
-            System.out.println("Receiving: ");
-            ack.PrintToConsole();
+            try {
+                var ack = Trame.GetTrame(in);
+                System.out.println("Receiving: ");
+                ack.PrintToConsole();
 
-            if (ack.getType() == 'A' && ack.getNum() == trame.getNum()) {
-                TrameReceived = true;
+                if (ack.getType() == 'A' && ack.getNum() == trame.getNum()) {
+                    TrameReceived = true;
+                }
+            } catch (SocketTimeoutException e) {
+                System.out.println("Socket time out.");
             }
+
 
             sending = "Resending: ";
         }
