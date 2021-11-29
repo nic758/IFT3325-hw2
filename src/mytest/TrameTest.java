@@ -8,7 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-public class SenderTest {
+public class TrameTest {
 
     @Test
     public void Test_ToBytes() throws IOException {

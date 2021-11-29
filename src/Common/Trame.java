@@ -82,7 +82,7 @@ public class Trame {
     public boolean IsCRCEquals() {
         var trameString = String.valueOf(Type) + String.valueOf(Num) + Payload;
         var trameBytes = trameString.getBytes(StandardCharsets.UTF_8);
-        var calculatedCRC = new CRC16CCITT().calcCRC(trameBytes);
+        var calculatedCRC = new CRC().calc(trameBytes);
 
         return CRC == calculatedCRC;
     }
@@ -90,7 +90,7 @@ public class Trame {
     public void CalcCRC() {
         var crcString = String.valueOf(Type) + String.valueOf(Num) + Payload;
         var crcBytes = crcString.getBytes(StandardCharsets.UTF_8);
-        CRC = new CRC16CCITT().calcCRC(crcBytes);
+        CRC = new CRC().calc(crcBytes);
     }
 
     public byte[] ToBytes() throws IOException {
