@@ -59,14 +59,16 @@ public class Trame {
     }
 
     private void Receive(byte[] b) {
-        var stringData = new String(b, StandardCharsets.UTF_8);
+        var unstuffedBytes = UnStuff(b);
+
+        var stringData = new String(unstuffedBytes, StandardCharsets.UTF_8);
         Type = stringData.charAt(1);
         Num = stringData.charAt(2);
 
-        var payloadBytes = Arrays.copyOfRange(b, 3, b.length - 3);
+        var payloadBytes = Arrays.copyOfRange(unstuffedBytes, 3, unstuffedBytes.length - 3);
         Payload = new String(payloadBytes, StandardCharsets.UTF_8);
 
-        var CRCbytes = Arrays.copyOfRange(b, b.length - 3, b.length - 1);
+        var CRCbytes = Arrays.copyOfRange(unstuffedBytes, unstuffedBytes.length - 3, unstuffedBytes.length - 1);
         CRC = ((CRCbytes[1] & 0xff) << 8) | (CRCbytes[0] & 0xff);
     }
 
@@ -85,6 +87,7 @@ public class Trame {
     }
 
     public byte[] ToBytes() throws IOException {
+        //TODO:need refactor;
         var trameString = Flag + String.valueOf(Type) + String.valueOf(Num) + Payload;
         var b = trameString.getBytes(StandardCharsets.UTF_8);
 
@@ -98,7 +101,98 @@ public class Trame {
         //This add the flag at the end of the trame
         stream.write(Flag.getBytes(StandardCharsets.UTF_8));
 
-        return stream.toByteArray();
+        return BitStuff(stream.toByteArray());
+    }
+
+    private String ArrayToBinaryString(byte[] b) {
+        StringBuilder bitString = new StringBuilder();
+
+        for (byte aByte : b) {
+            var s = String.format("%8s", Integer.toBinaryString(aByte & 0xFF)).replace(' ', '0');
+            bitString.append(s);
+        }
+
+        return bitString.toString();
+    }
+
+    private byte[] BitStringToByteArray(String bits) {
+        var length = (int) Math.ceil((float) bits.length() / 8);
+        //We add +2 on the length for the flags
+        var b = new byte[length + 2];
+
+        //Adding flag to byte array;
+        var byteFlag = Flag.getBytes(StandardCharsets.UTF_8)[0];
+        b[0] = byteFlag;
+        b[b.length - 1] = byteFlag;
+        var offset = 0;
+        var count = 1;
+        while (offset < bits.length()) {
+            var bitsToTake = Math.min(bits.length() - offset, 8);
+            var bit = bits.substring(offset, offset + bitsToTake);
+            offset += 8;
+
+            b[count] = (byte) Integer.parseInt(bit, 2);
+            count++;
+        }
+
+        return b;
+    }
+
+    private byte[] UnStuff(byte[] b) {
+        //Remove flag from byte array
+        var removedFlag = Arrays.copyOfRange(b, 1, b.length - 1);
+        var bitString = ArrayToBinaryString(removedFlag);
+
+        int cnt = 0;
+        StringBuilder unstuffed = new StringBuilder();
+        boolean isAdded0 = false;
+        for (int i = 0; i < bitString.length(); i++) {
+            var c = bitString.charAt(i);
+
+            if (c == '1') {
+                cnt++;
+                unstuffed.append(c);
+                if (cnt == 5) {
+                    isAdded0 = true;
+                }
+            } else {
+                if (isAdded0) {
+                    isAdded0 = false;
+                    continue;
+                }
+
+                unstuffed.append(c);
+                cnt=0;
+            }
+        }
+
+        return BitStringToByteArray(unstuffed.toString());
+    }
+
+    private byte[] BitStuff(byte[] b) {
+        //Remove flag from byte array
+        var removedFlag = Arrays.copyOfRange(b, 1, b.length - 1);
+        var bitString = ArrayToBinaryString(removedFlag);
+
+        var cnt = 0;
+        StringBuilder stuffedString = new StringBuilder();
+        for (int i = 0; i < bitString.length(); i++) {
+            var c = bitString.charAt(i);
+            if (c == '1') {
+                cnt++;
+                if (cnt < 5) {
+                    stuffedString.append(c);
+                } else {
+                    stuffedString.append(c).append('0');
+                    cnt = 0;
+                }
+            } else {
+                stuffedString.append(c);
+                cnt = 0;
+            }
+        }
+
+        return BitStringToByteArray(stuffedString.toString());
     }
 
     public void PrintToConsole() {
