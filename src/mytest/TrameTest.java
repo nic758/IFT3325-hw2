@@ -7,6 +7,8 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class TrameTest {
 
@@ -61,5 +63,26 @@ public class TrameTest {
         var t = Trame.GetTrame(stream);
 
         Assert.assertTrue(t.IsCRCEquals());
+    }
+
+    @Test
+    public void Test_Bytestuff(){
+        var t = new Trame();
+        var data = "~this ~ is a total valid ~E string ~";
+        var stuffedBytes = t.Bytestuff(data.getBytes(StandardCharsets.UTF_8));
+        var actual = new String(stuffedBytes, StandardCharsets.UTF_8);
+        var expected = "~this E~ is a total valid E~EE string ~";
+
+        Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void Test_Bytestuff1(){
+        var t = new Trame();
+        var data = new byte[]{126, -3, 123, 0, 69, 126,126};
+        var actual = t.Bytestuff(data);
+        var expected = new byte[]{126, -3, 123, 0, 69,69, 69, 126,126};
+
+        Assert.assertArrayEquals(expected, actual);
     }
 }

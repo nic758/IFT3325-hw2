@@ -37,6 +37,7 @@ public class Trame {
         byte b;
         boolean processNextChar = true;
         while (true) {
+            //TODO: maybe refactor
             b = in.readByte();
             //if the previous char was a special char we don't want to process this char.
             if(!processNextChar){
@@ -108,7 +109,7 @@ public class Trame {
         return Bytestuff(stream.toByteArray());
     }
 
-    private byte[] Bytestuff(byte[] b){
+    public byte[] Bytestuff(byte[] b){
         var stream = new ByteArrayOutputStream();
         var removedFlag = Arrays.copyOfRange(b, 1, b.length-1);
         stream.write(b[0]);
