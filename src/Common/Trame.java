@@ -1,18 +1,12 @@
 package Common;
 
-import Sender.SenderClient;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.zip.CRC32;
 
 public class Trame {
-    //Slide page 13
-    //TODO:bit stuffing, test, sliding_window > 1 ??.
     public static String Flag = "~";
     char Type;
     char Num;
@@ -40,9 +34,22 @@ public class Trame {
     public static Trame GetTrame(DataInputStream in) throws IOException {
         var stream = new ByteArrayOutputStream();
         var firstFlag = true;
-        Byte b;
+        byte b;
+        boolean processNextChar = true;
         while (true) {
             b = in.readByte();
+            //if the previous char was a special char we don't want to process this char.
+            if(!processNextChar){
+                processNextChar =true;
+                stream.write(b);
+                continue;
+            }
+            //We will not want to process next char since it's our data.
+            if(b == 'E'){
+                processNextChar = false;
+                continue;
+            }
+
             stream.write(b);
             if (b == Trame.Flag.charAt(0) && firstFlag) {
                 firstFlag = false;
@@ -73,7 +80,7 @@ public class Trame {
     public boolean IsCRCEquals() {
         var trameString = String.valueOf(Type) + String.valueOf(Num) + Payload;
         var trameBytes = trameString.getBytes(StandardCharsets.UTF_8);
-        var calculatedCRC = new CRC16CCITT().calcCRC(trameBytes);
+        var calculatedCRC = new CRC().calc(trameBytes);
 
         return CRC == calculatedCRC;
     }
@@ -81,7 +88,7 @@ public class Trame {
     public void CalcCRC() {
         var crcString = String.valueOf(Type) + String.valueOf(Num) + Payload;
         var crcBytes = crcString.getBytes(StandardCharsets.UTF_8);
-        CRC = new CRC16CCITT().calcCRC(crcBytes);
+        CRC = new CRC().calc(crcBytes);
     }
 
     public byte[] ToBytes() throws IOException {
@@ -97,6 +104,23 @@ public class Trame {
         stream.write(CRCbytes);
         //This add the flag at the end of the trame
         stream.write(Flag.getBytes(StandardCharsets.UTF_8));
+
+        return Bytestuff(stream.toByteArray());
+    }
+
+    private byte[] Bytestuff(byte[] b){
+        var stream = new ByteArrayOutputStream();
+        var removedFlag = Arrays.copyOfRange(b, 1, b.length-1);
+        stream.write(b[0]);
+
+        for (byte c:removedFlag){
+            if(c == Flag.getBytes(StandardCharsets.UTF_8)[0] || c=='E'){
+                stream.write('E');
+            }
+
+            stream.write(c);
+        }
+        stream.write(b[b.length-1]);
 
         return stream.toByteArray();
     }
