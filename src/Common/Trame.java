@@ -5,6 +5,7 @@ import Sender.SenderClient;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -40,9 +41,22 @@ public class Trame {
     public static Trame GetTrame(DataInputStream in) throws IOException {
         var stream = new ByteArrayOutputStream();
         var firstFlag = true;
-        Byte b;
+        byte b;
+        boolean processNextChar = true;
         while (true) {
             b = in.readByte();
+
+            if(!processNextChar){
+                processNextChar =true;
+                stream.write(b);
+                continue;
+            }
+
+            if(b == 'E'){
+                processNextChar = false;
+                continue;
+            }
+
             stream.write(b);
             if (b == Trame.Flag.charAt(0) && firstFlag) {
                 firstFlag = false;
@@ -97,6 +111,23 @@ public class Trame {
         stream.write(CRCbytes);
         //This add the flag at the end of the trame
         stream.write(Flag.getBytes(StandardCharsets.UTF_8));
+
+        return Bitstuff(stream.toByteArray());
+    }
+
+    private byte[] Bitstuff(byte[] b){
+        var stream = new ByteArrayOutputStream();
+        var removedFlag = Arrays.copyOfRange(b, 1, b.length-1);
+        stream.write(b[0]);
+
+        for (byte c:removedFlag){
+            if(c == Flag.getBytes(StandardCharsets.UTF_8)[0] || c=='E'){
+                stream.write('E');
+            }
+
+            stream.write(c);
+        }
+        stream.write(b[b.length-1]);
 
         return stream.toByteArray();
     }
