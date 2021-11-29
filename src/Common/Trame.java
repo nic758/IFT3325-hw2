@@ -1,15 +1,10 @@
 package Common;
 
-import Sender.SenderClient;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.zip.CRC32;
 
 public class Trame {
     //Slide page 13
@@ -112,10 +107,10 @@ public class Trame {
         //This add the flag at the end of the trame
         stream.write(Flag.getBytes(StandardCharsets.UTF_8));
 
-        return Bitstuff(stream.toByteArray());
+        return Bytestuff(stream.toByteArray());
     }
 
-    private byte[] Bitstuff(byte[] b){
+    private byte[] Bytestuff(byte[] b){
         var stream = new ByteArrayOutputStream();
         var removedFlag = Arrays.copyOfRange(b, 1, b.length-1);
         stream.write(b[0]);
