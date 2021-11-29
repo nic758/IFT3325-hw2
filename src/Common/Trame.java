@@ -7,8 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Trame {
-    //Slide page 13
-    //TODO:bit stuffing, test, sliding_window > 1 ??.
     public static String Flag = "~";
     char Type;
     char Num;
