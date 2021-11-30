@@ -37,7 +37,6 @@ public class Trame {
         byte b;
         boolean processNextChar = true;
         while (true) {
-            //TODO: maybe refactor
             b = in.readByte();
             //if the previous char was a special char we don't want to process this char.
             if(!processNextChar){
@@ -45,7 +44,7 @@ public class Trame {
                 stream.write(b);
                 continue;
             }
-            //We will not want to process next char since it's our data.
+            //We do not want to process next char since it's our data.
             if(b == 'E'){
                 processNextChar = false;
                 continue;
